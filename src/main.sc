@@ -1,23 +1,48 @@
-require: slotfilling/slotFilling.sc
-  module = sys.zb-common
+require: requirements.sc
+
+init:
+
+    bind("postProcess", function($context) {
+        $context.session.lastState = $jsapi.context().contextPath;
+        if ($jsapi.context().currentState != '/noMatch') {
+            $context.session.globalNoMatchCounter = 0;
+        } else {
+            $context.session.globalNoMatchCounter++;
+        }
+        if (!$jsapi.context().currentState.indexOf('/noMatch')) {
+            $context.session.noMatchCounter = 0;
+        } else {
+            $context.session.noMatchCounter++;
+        }
+    });
+
+    bind("onAnyError", function($context) {
+        var answers = [
+            "Что-то пошло не так. Нажмите /start.",
+            "Произошла ошибка. Нажмите /start.",
+            "Все сломалось. Попробуйте еще раз /start."
+        ];
+        var randomAnswer = answers[$reactions.random(answers.length)];
+        $reactions.answer(randomAnswer);
+        $reactions.buttons("/start")
+    });
+
 theme: /
 
     state: Start
         q!: $regex</start>
-        a: Начнём.
+        script:
+            $jsapi.startSession();
+        go!: /Hello
 
     state: Hello
-        intent!: /привет
-        a: Привет привет
+        if: $client.name
+            script:
+                $temp.name = ", " + $client.name
+        a: Привет{{$temp.name}}. Я бот компании Just Tour. Я могу помочь узнать информацию о погоде, а так же оформить заявку на тур. Чем я могу Вам помочь?
+        script: 
+            $reactions.buttons(["Узнать погоду", "Оформить заявку на тур"]);
 
-    state: Bye
-        intent!: /пока
-        a: Пока пока
-
-    state: NoMatch
-        event!: noMatch
-        a: Я не понял. Вы сказали: {{$request.query}}
-
-    state: Match
-        event!: match
-        a: {{$context.intent.answer}}
+    state: Timedout
+        script:
+            timedout();

@@ -1,4 +1,4 @@
-name: zb-cailapub
+name: bot_sertification
 
 entryPoint: main.sc
 
@@ -10,6 +10,23 @@ tests:
     - test.xml
 
 nlp:
+  considerContextDepthInStateSelectionV2: false
   intentNoMatchThresholds:
     phrases: 0.2
     patterns: 0.2
+  lengthLimit:
+    enabled: true
+    symbols: 250
+    words: -1
+  timeLimit:
+    enabled: true
+    timeout: 1000
+
+injector:
+  timeoutTime: 120
+  api_key: 'db0c67cda07a348bf3862e9cafd753d3'
+  slotfilling:
+    maxSlotRetries: 1
+    stopOnAnyIntent: false
+    stopOnAnyIntentThreshold: 0.2
+
